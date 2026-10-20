@@ -23,14 +23,26 @@ If the sound button does not produce audio, click it once after loading the page
 
 The demo response in `app.js` is deterministic and does not call an AI service. To connect an open-weight model, choose either path below.
 
-### Ollama (recommended for a quick local prototype)
+### Ollama local connection
 
 1. Install [Ollama](https://ollama.com) and run `ollama pull gemma3:4b` or `ollama pull llama3.2`.
 2. Start Ollama (`ollama serve` if it is not already running).
-3. Replace the demo handler in `app.js` with:
+3. Open the **Private thinking** card, leave the endpoint as `http://127.0.0.1:11434`, and click **Connect**. SlothSpace calls Ollama's local `/api/tags` endpoint and lists installed models.
+4. Select a model, enter a note, and submit it. SlothSpace sends the prompt to Ollama's local `/api/chat` endpoint. If Ollama is unavailable, it falls back to the browser-only reflection demo.
+
+If the browser blocks the request, start Ollama with the local app origin allowed:
+
+```cmd
+set OLLAMA_ORIGINS=http://127.0.0.1:8080
+ollama serve
+```
+
+The integration uses no hosted APIs, API keys, or SlothSpace accounts. Keep Ollama bound to localhost.
+
+The underlying request shape is:
 
 ```js
-const response = await fetch("http://localhost:11434/api/chat", {
+const response = await fetch("http://127.0.0.1:11434/api/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -42,8 +54,6 @@ const response = await fetch("http://localhost:11434/api/chat", {
 const data = await response.json();
 document.querySelector("#ai-response").textContent = data.message.content;
 ```
-
-Keep Ollama bound to localhost. For a production app, add a small local server proxy or configure Ollama's local CORS policy rather than exposing the endpoint publicly.
 
 ### WebLLM (fully in-browser)
 

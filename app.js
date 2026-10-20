@@ -138,8 +138,65 @@ const localReflection = (text) => {
   const first = clean.split(/[.!?]/)[0].slice(0, 90);
   return `A gentle next step: write down one action related to “${first}${first.length === 90 ? "…" : ""}” and give it ten quiet minutes.`;
 };
-$("#ai-submit").addEventListener("click", () => {
+const ollamaUrl = $("#ollama-url");
+const ollamaModel = $("#ollama-model");
+const modelStatus = $("#model-status");
+let ollamaConnected = false;
+const savedOllamaUrl = localStorage.getItem("slothspace-ollama-url");
+if (savedOllamaUrl) ollamaUrl.value = savedOllamaUrl;
+const setModelStatus = (message, connected = false) => {
+  ollamaConnected = connected;
+  modelStatus.innerHTML = `<span class="status-dot"></span> ${message}`;
+};
+const loadOllamaModels = async () => {
+  const baseUrl = ollamaUrl.value.trim().replace(/\/+$/, "");
+  if (!baseUrl) throw new Error("Enter an Ollama URL.");
+  const response = await fetch(`${baseUrl}/api/tags`);
+  if (!response.ok) throw new Error(`Ollama returned HTTP ${response.status}.`);
+  const data = await response.json();
+  const models = Array.isArray(data.models) ? data.models : [];
+  ollamaModel.innerHTML = models.length
+    ? models.map((model) => `<option value="${model.name}">${model.name}</option>`).join("")
+    : '<option value="">No models installed</option>';
+  if (!models.length) throw new Error("Ollama is running, but no models are installed.");
+  localStorage.setItem("slothspace-ollama-url", baseUrl);
+  setModelStatus(`${models.length} local model${models.length === 1 ? "" : "s"} available`, true);
+};
+$("#ollama-connect").addEventListener("click", async () => {
+  const button = $("#ollama-connect");
+  button.disabled = true;
+  setModelStatus("Connecting…");
+  try {
+    await loadOllamaModels();
+    button.textContent = "Connected";
+  } catch (error) {
+    setModelStatus(`Not connected: ${error.message}`);
+    button.textContent = "Retry";
+  } finally {
+    button.disabled = false;
+  }
+});
+$("#ollama-refresh").addEventListener("click", async () => {
+  try { await loadOllamaModels(); } catch (error) { setModelStatus(`Not connected: ${error.message}`); }
+});
+const askOllama = async (text) => {
+  const response = await fetch(`${ollamaUrl.value.trim().replace(/\/+$/, "")}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: ollamaModel.value, stream: false, messages: [{ role: "user", content: `Give one gentle next step for: ${text}` }] })
+  });
+  if (!response.ok) throw new Error(`Ollama returned HTTP ${response.status}.`);
+  const data = await response.json();
+  if (!data.message || !data.message.content) throw new Error("Ollama returned an empty response.");
+  return data.message.content;
+};
+$("#ai-submit").addEventListener("click", async () => {
   const response = $("#ai-response");
   response.textContent = "Reflecting locally…";
-  setTimeout(() => { response.textContent = localReflection($("#ai-input").value); }, 350);
+  try {
+    response.textContent = ollamaConnected ? await askOllama($("#ai-input").value) : localReflection($("#ai-input").value);
+  } catch (error) {
+    setModelStatus(`Ollama error: ${error.message}`);
+    response.textContent = `${localReflection($("#ai-input").value)} (Browser demo used because Ollama was unavailable.)`;
+  }
 });

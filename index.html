@@ -125,7 +125,12 @@
             <button id="ai-submit" class="send-button" type="button" aria-label="Run local reflection">→</button>
           </div>
           <div class="ai-response" id="ai-response">Local reflection is ready when you are.</div>
-          <div class="ai-footer"><span class="model-status"><span class="status-dot"></span> Browser demo mode</span><a href="README.md">Connect Ollama ↗</a></div>
+          <div class="ollama-setup">
+            <label>Ollama URL<input id="ollama-url" type="url" value="http://127.0.0.1:11434" autocomplete="url" /></label>
+            <label>Model<select id="ollama-model"><option value="">Connect to discover models</option></select></label>
+            <button id="ollama-connect" class="connect-button" type="button">Connect</button>
+          </div>
+          <div class="ai-footer"><span class="model-status" id="model-status"><span class="status-dot"></span> Browser demo mode</span><button id="ollama-refresh" class="link-button" type="button">Refresh models</button></div>
         </article>
       </section>
 
