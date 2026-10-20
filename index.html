@@ -11,7 +11,7 @@
   <body>
     <main class="shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="SlothSpace home">
+        <a class="brand" href="#" aria-label="SlothSpace home">
           <span class="brand-mark">◒</span>
           <span>Sloth<span class="brand-light">Space</span></span>
         </a>
@@ -21,7 +21,25 @@
         </div>
       </header>
 
-      <section class="hero">
+      <nav class="route-nav" aria-label="SlothSpace sections">
+        <a href="#focus" data-route="focus">Focus</a>
+        <a href="#reset" data-route="reset">Reset</a>
+        <a href="#atmosphere" data-route="atmosphere">Atmosphere</a>
+        <a href="#inbox" data-route="inbox">Inbox</a>
+        <a href="#copilot" data-route="copilot">Co-pilot</a>
+      </nav>
+
+      <section class="welcome-page" id="welcome-page">
+        <div class="welcome-copy">
+          <p class="eyebrow">A slower space for busy minds</p>
+          <h1>Arrive softly.<br /><em>Stay awhile.</em></h1>
+          <p class="hero-subtitle">A quiet, local-first place for one small task, one deep breath, and a little more room.</p>
+          <a class="enter-button" href="#focus">Enter SlothSpace <span>→</span></a>
+        </div>
+        <div class="welcome-orbit" aria-hidden="true"><span>✦</span><span>·</span><span>✧</span></div>
+      </section>
+
+      <section class="hero dashboard-hero">
         <div class="hero-copy">
           <p class="eyebrow">Tuesday, October 20 <span class="eyebrow-separator">·</span> Week 3</p>
           <h1>Make room for<br /><em>the quiet work.</em></h1>
@@ -37,7 +55,7 @@
       </section>
 
       <section class="dashboard-grid" aria-label="Productivity dashboard">
-        <article class="card focus-card">
+        <article class="card focus-card" data-page="focus">
           <div class="card-heading">
             <div>
               <p class="card-kicker">01 <span></span> Gentle focus</p>
@@ -57,7 +75,7 @@
           <div class="progress-label"><span id="focus-status">0 of 1 complete</span><span>small wins count</span></div>
         </article>
 
-        <article class="card breathing-card">
+        <article class="card breathing-card" data-page="reset">
           <div class="card-heading">
             <div>
               <p class="card-kicker">02 <span></span> Reset</p>
@@ -72,7 +90,7 @@
           <button class="text-button" id="breathing-toggle" type="button">Start breathing <span>→</span></button>
         </article>
 
-        <article class="card sound-card">
+        <article class="card sound-card" data-page="atmosphere">
           <div class="card-heading">
             <div>
               <p class="card-kicker">03 <span></span> Atmosphere</p>
@@ -92,7 +110,7 @@
           <p class="micro-copy" id="sound-status" role="status">Synthesized here in your browser. No audio files, no tracking.</p>
         </article>
 
-        <article class="card inbox-card">
+        <article class="card inbox-card" data-page="inbox">
           <div class="card-heading">
             <div>
               <p class="card-kicker">04 <span></span> Clear the edges</p>
@@ -111,7 +129,7 @@
           <div class="archive-row"><span><span class="archive-dot"></span> Local archive</span><span id="archive-count">0 archived</span></div>
         </article>
 
-        <article class="card local-ai-card">
+        <article class="card local-ai-card" data-page="copilot">
           <div class="card-heading">
             <div>
               <p class="card-kicker">05 <span></span> Private thinking</p>
@@ -119,17 +137,22 @@
             </div>
             <span class="lock-icon">⌑</span>
           </div>
-          <p class="card-intro">Ask a local model to turn a note into a calm next step. Your words never leave this device.</p>
+          <p class="card-intro">Choose a local model or an API provider to turn a note into a calm next step.</p>
           <div class="ai-input-wrap">
             <textarea id="ai-input" rows="2" placeholder="What’s taking up space in your head?"></textarea>
             <button id="ai-submit" class="send-button" type="button" aria-label="Run local reflection">→</button>
           </div>
           <div class="ai-response" id="ai-response">Local reflection is ready when you are.</div>
-          <div class="ollama-setup">
-            <label>Ollama URL<input id="ollama-url" type="url" value="http://127.0.0.1:11434" autocomplete="url" /></label>
-            <label>Model<select id="ollama-model"><option value="">Connect to discover models</option></select></label>
+          <div class="ollama-setup provider-setup">
+            <label>Provider<select id="ai-provider"><option value="ollama">Local Ollama</option><option value="gemini">Google Gemini</option><option value="openai">Other / OpenAI-compatible</option></select></label>
+            <label class="ollama-field">Ollama URL<input id="ollama-url" type="url" value="http://127.0.0.1:11434" autocomplete="url" /></label>
+            <label class="ollama-field">Model<select id="ollama-model"><option value="">Connect to discover models</option></select></label>
+            <label class="remote-field" hidden>API key<input id="ai-api-key" type="password" placeholder="Paste locally for this session" autocomplete="off" /></label>
+            <label class="remote-field" hidden>Model<input id="remote-model" type="text" value="gemini-2.0-flash" placeholder="Model name" /></label>
+            <label class="openai-field" hidden>Endpoint<input id="openai-url" type="url" value="https://api.openai.com/v1" /></label>
             <button id="ollama-connect" class="connect-button" type="button">Connect</button>
           </div>
+          <p class="provider-note" id="provider-note">Local Ollama keeps prompts on this device.</p>
           <div class="ai-footer"><span class="model-status" id="model-status"><span class="status-dot"></span> Browser demo mode</span><button id="ollama-refresh" class="link-button" type="button">Refresh models</button></div>
         </article>
       </section>

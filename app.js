@@ -1,5 +1,28 @@
 const $ = (selector) => document.querySelector(selector);
 
+const routeNames = ["focus", "reset", "atmosphere", "inbox", "copilot"];
+const welcomePage = $("#welcome-page");
+const dashboardHero = $(".dashboard-hero");
+const dashboardGrid = $(".dashboard-grid");
+const footer = $(".footer");
+const routeNav = $(".route-nav");
+const route = () => {
+  const requested = window.location.hash.slice(1);
+  const page = routeNames.includes(requested) ? requested : "";
+  const isWelcome = !page;
+  welcomePage.hidden = !isWelcome;
+  dashboardHero.classList.toggle("visible", !isWelcome);
+  dashboardGrid.classList.toggle("visible", !isWelcome);
+  dashboardGrid.classList.toggle("route-view", !isWelcome);
+  footer.classList.toggle("visible", !isWelcome);
+  routeNav.classList.toggle("visible", !isWelcome);
+  document.querySelectorAll(".dashboard-grid .card").forEach((card) => card.classList.toggle("active", card.dataset.page === page));
+  document.querySelectorAll("[data-route]").forEach((link) => link.classList.toggle("active", link.dataset.route === page));
+  document.title = isWelcome ? "SlothSpace — Slow and steady" : `SlothSpace — ${page}`;
+};
+window.addEventListener("hashchange", route);
+route();
+
 const clock = $("#current-time");
 const updateClock = () => {
   const now = new Date();
@@ -141,13 +164,37 @@ const localReflection = (text) => {
 const ollamaUrl = $("#ollama-url");
 const ollamaModel = $("#ollama-model");
 const modelStatus = $("#model-status");
+const provider = $("#ai-provider");
+const apiKey = $("#ai-api-key");
+const remoteModel = $("#remote-model");
+const openaiUrl = $("#openai-url");
+const providerNote = $("#provider-note");
 let ollamaConnected = false;
+let remoteConnected = false;
 const savedOllamaUrl = localStorage.getItem("slothspace-ollama-url");
 if (savedOllamaUrl) ollamaUrl.value = savedOllamaUrl;
 const setModelStatus = (message, connected = false) => {
   ollamaConnected = connected;
+  remoteConnected = connected;
   modelStatus.innerHTML = `<span class="status-dot"></span> ${message}`;
 };
+const updateProviderFields = () => {
+  const isOllama = provider.value === "ollama";
+  const isGemini = provider.value === "gemini";
+  document.querySelectorAll(".ollama-field").forEach((field) => { field.hidden = !isOllama; });
+  document.querySelectorAll(".remote-field").forEach((field) => { field.hidden = isOllama; });
+  document.querySelectorAll(".openai-field").forEach((field) => { field.hidden = !provider.value || provider.value !== "openai"; });
+  $("#ollama-refresh").hidden = !isOllama;
+  $("#ollama-connect").textContent = isOllama ? "Connect" : "Test";
+  providerNote.textContent = isOllama
+    ? "Local Ollama keeps prompts on this device."
+    : isGemini
+      ? "Gemini sends your prompt to Google. Use a restricted development key."
+      : "The endpoint receives your prompt directly from this browser.";
+  setModelStatus(isOllama ? "Browser demo mode" : "Not connected");
+};
+provider.addEventListener("change", updateProviderFields);
+updateProviderFields();
 const loadOllamaModels = async () => {
   const baseUrl = ollamaUrl.value.trim().replace(/\/+$/, "");
   if (!baseUrl) throw new Error("Enter an Ollama URL.");
@@ -162,20 +209,6 @@ const loadOllamaModels = async () => {
   localStorage.setItem("slothspace-ollama-url", baseUrl);
   setModelStatus(`${models.length} local model${models.length === 1 ? "" : "s"} available`, true);
 };
-$("#ollama-connect").addEventListener("click", async () => {
-  const button = $("#ollama-connect");
-  button.disabled = true;
-  setModelStatus("Connecting…");
-  try {
-    await loadOllamaModels();
-    button.textContent = "Connected";
-  } catch (error) {
-    setModelStatus(`Not connected: ${error.message}`);
-    button.textContent = "Retry";
-  } finally {
-    button.disabled = false;
-  }
-});
 $("#ollama-refresh").addEventListener("click", async () => {
   try { await loadOllamaModels(); } catch (error) { setModelStatus(`Not connected: ${error.message}`); }
 });
@@ -190,13 +223,65 @@ const askOllama = async (text) => {
   if (!data.message || !data.message.content) throw new Error("Ollama returned an empty response.");
   return data.message.content;
 };
+const askGemini = async (text) => {
+  if (!apiKey.value.trim()) throw new Error("Enter a Gemini API key.");
+  const model = remoteModel.value.trim() || "gemini-2.0-flash";
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey.value.trim())}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: `Give one gentle next step for: ${text}` }] }] })
+  });
+  if (!response.ok) throw new Error(`Gemini returned HTTP ${response.status}.`);
+  const data = await response.json();
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) throw new Error("Gemini returned an empty response.");
+  return content;
+};
+const askOpenAiCompatible = async (text) => {
+  if (!apiKey.value.trim()) throw new Error("Enter an API key.");
+  const endpoint = openaiUrl.value.trim().replace(/\/+$/, "");
+  const model = remoteModel.value.trim();
+  if (!endpoint || !model) throw new Error("Enter an endpoint and model.");
+  const response = await fetch(`${endpoint}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey.value.trim()}` },
+    body: JSON.stringify({ model, messages: [{ role: "user", content: `Give one gentle next step for: ${text}` }] })
+  });
+  if (!response.ok) throw new Error(`Model endpoint returned HTTP ${response.status}.`);
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("Model endpoint returned an empty response.");
+  return content;
+};
+$("#ollama-connect").addEventListener("click", async () => {
+  if (provider.value === "ollama") return;
+  const button = $("#ollama-connect");
+  button.disabled = true;
+  setModelStatus("Testing…");
+  try {
+    if (!apiKey.value.trim()) throw new Error("Enter an API key.");
+    if (provider.value === "gemini") await askGemini("Reply with the single word ready.");
+    else await askOpenAiCompatible("Reply with the single word ready.");
+    remoteConnected = true;
+    setModelStatus(`${provider.value === "gemini" ? "Gemini" : "Custom model"} connected`, true);
+    button.textContent = "Connected";
+  } catch (error) {
+    setModelStatus(`Not connected: ${error.message}`);
+    button.textContent = "Retry";
+  } finally {
+    button.disabled = false;
+  }
+});
 $("#ai-submit").addEventListener("click", async () => {
   const response = $("#ai-response");
   response.textContent = "Reflecting locally…";
   try {
-    response.textContent = ollamaConnected ? await askOllama($("#ai-input").value) : localReflection($("#ai-input").value);
+    const text = $("#ai-input").value;
+    if (provider.value === "ollama") response.textContent = ollamaConnected ? await askOllama(text) : localReflection(text);
+    else if (remoteConnected) response.textContent = provider.value === "gemini" ? await askGemini(text) : await askOpenAiCompatible(text);
+    else response.textContent = localReflection(text);
   } catch (error) {
-    setModelStatus(`Ollama error: ${error.message}`);
+    setModelStatus(`${provider.value === "ollama" ? "Ollama" : "Remote model"} error: ${error.message}`);
     response.textContent = `${localReflection($("#ai-input").value)} (Browser demo used because Ollama was unavailable.)`;
   }
 });

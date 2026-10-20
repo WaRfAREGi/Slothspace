@@ -16,6 +16,8 @@ Open `http://localhost:8080`. A local server is recommended because module scrip
 - Brown noise and soft rain synthesized with the Web Audio API. No audio assets or network connection are required.
 - Local drag-and-drop inbox. File objects stay in memory in the browser; they are never uploaded.
 - Browser-only reflection demo that extracts a short next step from entered text.
+- Hash-routed views for the welcome screen, focus, breathing reset, atmosphere, local inbox, and Ollama co-pilot.
+- Optional Gemini and OpenAI-compatible provider controls for users who choose remote inference.
 
 If the sound button does not produce audio, click it once after loading the page (audio requires a user gesture), check the browser tab is not muted, and check the system output device. The control now reports unsupported Web Audio environments or other playback errors below the sound controls.
 
@@ -38,6 +40,12 @@ ollama serve
 ```
 
 The integration uses no hosted APIs, API keys, or SlothSpace accounts. Keep Ollama bound to localhost.
+
+### Gemini and other providers
+
+The Private thinking page also offers **Google Gemini** and **Other / OpenAI-compatible** providers. Enter a model and API key, then use **Test** before submitting a prompt. Gemini uses the Google Generative Language API; the other option expects a `/chat/completions` endpoint such as an OpenAI-compatible gateway.
+
+These remote provider controls are opt-in. The key is held only in the current browser tab and is sent directly to the selected provider; it is not stored by SlothSpace. For a public deployment, use a backend proxy with server-side secrets instead of collecting keys in a static page.
 
 The underlying request shape is:
 
