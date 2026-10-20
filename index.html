@@ -18,8 +18,28 @@
         <div class="topbar-meta">
           <span class="offline-pill"><span class="status-dot"></span> Local only</span>
           <time id="current-time" datetime=""></time>
+          <button id="auth-button" class="auth-button" type="button">Sign in</button>
         </div>
       </header>
+      <section class="auth-panel" id="auth-panel" hidden>
+        <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+          <button id="auth-close" class="auth-close" type="button" aria-label="Close sign-in dialog">×</button>
+          <div class="auth-symbol">◒</div>
+          <p class="auth-overline">Private account <span></span> Optional sync</p>
+          <h2 id="auth-title">Keep your quiet work<br /><em>with you.</em></h2>
+          <p id="auth-message">Sign in with a magic link to sync your focus state and preferences across devices.</p>
+          <div class="auth-benefits"><span>✦ No password</span><span>⌁ Local-first</span></div>
+          <div class="auth-divider"><span>continue with email</span></div>
+          <form id="auth-form">
+            <label for="auth-email">Email address</label>
+            <div class="auth-form-row">
+              <input id="auth-email" type="email" required placeholder="you@example.com" autocomplete="email" />
+              <button class="connect-button" type="submit">Send link <span>→</span></button>
+            </div>
+          </form>
+          <p class="auth-footnote">We’ll send one quiet link. No password to remember.</p>
+        </div>
+      </section>
 
       <nav class="route-nav" aria-label="SlothSpace sections">
         <a href="#focus" data-route="focus">Focus</a>
@@ -143,17 +163,13 @@
             <button id="ai-submit" class="send-button" type="button" aria-label="Run local reflection">→</button>
           </div>
           <div class="ai-response" id="ai-response">Local reflection is ready when you are.</div>
-          <div class="ollama-setup provider-setup">
-            <label>Provider<select id="ai-provider"><option value="ollama">Local Ollama</option><option value="gemini">Google Gemini</option><option value="openai">Other / OpenAI-compatible</option></select></label>
-            <label class="ollama-field">Ollama URL<input id="ollama-url" type="url" value="http://127.0.0.1:11434" autocomplete="url" /></label>
-            <label class="ollama-field">Model<select id="ollama-model"><option value="">Connect to discover models</option></select></label>
-            <label class="remote-field" hidden>API key<input id="ai-api-key" type="password" placeholder="Paste locally for this session" autocomplete="off" /></label>
-            <label class="remote-field" hidden>Model<input id="remote-model" type="text" value="gemini-2.0-flash" placeholder="Model name" /></label>
-            <label class="openai-field" hidden>Endpoint<input id="openai-url" type="url" value="https://api.openai.com/v1" /></label>
-            <button id="ollama-connect" class="connect-button" type="button">Connect</button>
+          <div class="model-setup">
+            <label>Model source<select id="ai-provider"><option value="ollama">Local Ollama</option><option value="gemini">Google Gemini</option><option value="openai">OpenAI-compatible</option></select></label>
+            <div class="configured-model"><span>Configured model</span><strong id="configured-model">Browser demo</strong></div>
+            <button id="ollama-connect" class="connect-button" type="button">Test model</button>
           </div>
-          <p class="provider-note" id="provider-note">Local Ollama keeps prompts on this device.</p>
-          <div class="ai-footer"><span class="model-status" id="model-status"><span class="status-dot"></span> Browser demo mode</span><button id="ollama-refresh" class="link-button" type="button">Refresh models</button></div>
+          <p class="provider-note" id="provider-note">Private by default. Model settings are loaded from your local config.</p>
+          <div class="ai-footer"><span class="model-status" id="model-status"><span class="status-dot"></span> Browser demo mode</span><button id="ollama-refresh" class="link-button" type="button" hidden>Refresh models</button></div>
         </article>
       </section>
 

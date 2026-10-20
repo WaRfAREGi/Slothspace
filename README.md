@@ -47,6 +47,37 @@ The Private thinking page also offers **Google Gemini** and **Other / OpenAI-com
 
 These remote provider controls are opt-in. The key is held only in the current browser tab and is sent directly to the selected provider; it is not stored by SlothSpace. For a public deployment, use a backend proxy with server-side secrets instead of collecting keys in a static page.
 
+### Supabase magic-link sync
+
+SlothSpace can optionally sync focus state and volume preferences with Supabase:
+
+1. Create a Supabase project and enable Email authentication.
+2. Run [`supabase-schema.sql`](./supabase-schema.sql) in the Supabase SQL editor.
+3. Copy [`config.example.js`](./config.example.js) to `config.js`.
+4. Set `SUPABASE_URL` and the public `SUPABASE_ANON_KEY` in `config.js`.
+5. Add the local app URL to Supabase Auth's allowed redirect URLs, then reload the app.
+
+The **Sign in** button uses a passwordless magic link. `config.js` is ignored by Git. Never place a Supabase service-role key, model API key, or other secret in frontend code.
+
+### Environment configuration
+
+All local configuration values have a template in [`.env.example`](./.env.example), including Supabase, Ollama, Gemini, OpenAI-compatible endpoint, and model names:
+
+```cmd
+copy .env.example .env
+copy config.example.js config.js
+```
+
+Fill in `.env` for your own reference, then copy the same values into `config.js` for this zero-build static app. Browsers cannot read `.env` files directly; `config.js` is the small browser bridge used by the app. Both `.env` and `config.js` are ignored by Git.
+
+Important security rules:
+
+- Never commit `.env` or `config.js`.
+- Never put a Supabase service-role key in browser configuration.
+- Do not use a production Gemini or other provider secret directly in a public static frontend.
+- For production, move Gemini/OpenAI-compatible calls to a backend proxy and keep provider secrets server-side.
+- The Supabase anon key is intended for browser use only with Row Level Security enabled.
+
 The underlying request shape is:
 
 ```js
