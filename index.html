@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1624" />
+    <meta name="description" content="SlothSpace — a quiet, offline-first productivity and wind-down dashboard." />
+    <title>SlothSpace — Slow and steady</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="SlothSpace home">
+          <span class="brand-mark">◒</span>
+          <span>Sloth<span class="brand-light">Space</span></span>
+        </a>
+        <div class="topbar-meta">
+          <span class="offline-pill"><span class="status-dot"></span> Local only</span>
+          <time id="current-time" datetime=""></time>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Tuesday, October 20 <span class="eyebrow-separator">·</span> Week 3</p>
+          <h1>Make room for<br /><em>the quiet work.</em></h1>
+          <p class="hero-subtitle">A gentle place to sort your thoughts, files, and focus — at your own pace.</p>
+        </div>
+        <div class="moon-orbit" aria-hidden="true">
+          <div class="moon"><span></span></div>
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <span class="orbit-star star-one">✦</span>
+          <span class="orbit-star star-two">·</span>
+        </div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Productivity dashboard">
+        <article class="card focus-card">
+          <div class="card-heading">
+            <div>
+              <p class="card-kicker">01 <span></span> Gentle focus</p>
+              <h2>One thing at a time.</h2>
+            </div>
+            <span class="card-icon">↗</span>
+          </div>
+          <div class="focus-task">
+            <button class="check-button" id="task-check" aria-label="Complete task"></button>
+            <div>
+              <p class="task-title" id="task-title">Choose one small thing to finish</p>
+              <p class="task-note">No rush. Just a next step.</p>
+            </div>
+            <button class="quiet-button" id="change-task" type="button">Change</button>
+          </div>
+          <div class="progress-track"><span id="focus-progress"></span></div>
+          <div class="progress-label"><span id="focus-status">0 of 1 complete</span><span>small wins count</span></div>
+        </article>
+
+        <article class="card breathing-card">
+          <div class="card-heading">
+            <div>
+              <p class="card-kicker">02 <span></span> Reset</p>
+              <h2>Take a breath.</h2>
+            </div>
+            <span class="card-icon">◌</span>
+          </div>
+          <div class="breathing-circle" id="breathing-circle">
+            <span id="breathing-label">Breathe in</span>
+            <strong id="breathing-count">4</strong>
+          </div>
+          <button class="text-button" id="breathing-toggle" type="button">Start breathing <span>→</span></button>
+        </article>
+
+        <article class="card sound-card">
+          <div class="card-heading">
+            <div>
+              <p class="card-kicker">03 <span></span> Atmosphere</p>
+              <h2>Settle in.</h2>
+            </div>
+            <span class="card-icon">♫</span>
+          </div>
+          <div class="sound-controls">
+            <button class="sound-option active" data-sound="brown" type="button"><span class="sound-symbol">≈</span><span><strong>Brown noise</strong><small>Low &amp; steady</small></span></button>
+            <button class="sound-option" data-sound="rain" type="button"><span class="sound-symbol">⌁</span><span><strong>Soft rain</strong><small>On the window</small></span></button>
+          </div>
+          <div class="volume-row">
+            <button class="play-button" id="sound-toggle" type="button" aria-label="Play ambient sound">▶</button>
+            <input id="volume-control" type="range" min="0" max="100" value="32" aria-label="Ambient volume" />
+            <span id="volume-value">32%</span>
+          </div>
+          <p class="micro-copy" id="sound-status" role="status">Synthesized here in your browser. No audio files, no tracking.</p>
+        </article>
+
+        <article class="card inbox-card">
+          <div class="card-heading">
+            <div>
+              <p class="card-kicker">04 <span></span> Clear the edges</p>
+              <h2>Lazy inbox.</h2>
+            </div>
+            <span class="count-badge" id="file-count">0 items</span>
+          </div>
+          <p class="card-intro">Drop a few files here. We’ll keep them local while you decide where they belong.</p>
+          <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose files to tidy">
+            <input id="file-input" type="file" multiple hidden />
+            <span class="drop-icon">↓</span>
+            <strong>Drop files to tidy</strong>
+            <span>or <u>browse from this device</u></span>
+          </div>
+          <ul class="file-list" id="file-list" aria-live="polite"></ul>
+          <div class="archive-row"><span><span class="archive-dot"></span> Local archive</span><span id="archive-count">0 archived</span></div>
+        </article>
+
+        <article class="card local-ai-card">
+          <div class="card-heading">
+            <div>
+              <p class="card-kicker">05 <span></span> Private thinking</p>
+              <h2>A quiet co-pilot.</h2>
+            </div>
+            <span class="lock-icon">⌑</span>
+          </div>
+          <p class="card-intro">Ask a local model to turn a note into a calm next step. Your words never leave this device.</p>
+          <div class="ai-input-wrap">
+            <textarea id="ai-input" rows="2" placeholder="What’s taking up space in your head?"></textarea>
+            <button id="ai-submit" class="send-button" type="button" aria-label="Run local reflection">→</button>
+          </div>
+          <div class="ai-response" id="ai-response">Local reflection is ready when you are.</div>
+          <div class="ai-footer"><span class="model-status"><span class="status-dot"></span> Browser demo mode</span><a href="README.md">Connect Ollama ↗</a></div>
+        </article>
+      </section>
+
+      <footer class="footer"><span>Designed for slow and steady progress.</span><span>SlothSpace <span class="footer-mark">◒</span> Hacktoberfest Week 3</span></footer>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
